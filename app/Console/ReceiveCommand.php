@@ -15,7 +15,7 @@ class ReceiveCommand extends Command
         $threads = CommandParser::getArg("-threads", $args);
 
         if ($threads && !is_int($threads)) {
-                throw new CommandParserException("Threads number must be integer");
+            throw new CommandParserException("Threads number must be integer");
         }
 
         $threads = $threads ?? config("threads", 3);
@@ -24,10 +24,11 @@ class ReceiveCommand extends Command
 
         for ($i = 0; $i < $threads; $i++) {
             $task = $this->app->getTask(ReceiveTask::class);
+
             $task->run([
                 'queue' => env('RABBIT_QUEUE', 'default_queue')
             ]);
-            echo "RECEIVE STARTED " . $i . PHP_EOL;
+
             $tasks[] = $task;
         }
 

@@ -16,10 +16,9 @@ trait AsyncTask
         $this->thread = new Process();
 
         $this->name = '#task_' . $counter;
-        $counter++;
 
         $this->thread->run(
-            function () use($params, $counter) {
+            function () use($params) {
                 $result = 0;
 
                 try {
@@ -29,8 +28,10 @@ trait AsyncTask
 
                     $this->afterDo($params);
                 } catch (Exception $exception) {
-                    // todo: add logs
-                    echo $exception->getMessage() . PHP_EOL;
+                    $this->app
+                        ->getLogger()
+                        ->logE("AsyncTask{$this->name}", $exception->getMessage());
+
                     $result = 1;
                 }
 

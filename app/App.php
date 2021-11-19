@@ -9,15 +9,20 @@ use App\Models\RabbitInfo;
 use App\Models\Request;
 use App\Tasks\Task;
 use App\Tasks\traits\RabbitTask;
+use App\Utils\Logger\Logger;
 use DI\Container;
 use DI\ContainerBuilder;
+use DI\DependencyException;
+use DI\NotFoundException;
 use Dotenv\Dotenv;
 use Exception;
 use InvalidArgumentException;
+use phpseclib3\Math\BigInteger\Engines\PHP;
 
 class App
 {
     protected Container $container;
+    protected Logger $logger;
 
     /**
      * @throws Exception
@@ -47,6 +52,13 @@ class App
             echo "Help command not found" . PHP_EOL;
             exit(1);
         }
+
+        if (!$this->container->has(Logger::class)) {
+            echo "Logger not created" . PHP_EOL;
+            exit(1);
+        }
+
+        $this->logger = $this->container->get(Logger::class);
     }
 
     public function run(array $args)
@@ -70,12 +82,8 @@ class App
                 $this->container->get("console.Help"),
                 $args
             );
-        } catch (InvalidArgumentException $exception) {
-            // todo: Добавить логи в файл
-            echo "Application error =(" . PHP_EOL;
-        } catch (Exception $exception) {
-            // todo: Добавить логи в файл
-            echo "Rabbit connection is failure" . PHP_EOL;
+        } catch (InvalidArgumentException | Exception $exception) {
+            $this->logger->logE("APP", $exception->getMessage());
         }
 
         exit($result);
@@ -113,5 +121,14 @@ class App
         }
 
         return true;
+    }
+
+    public function getLogger():Logger
+    {
+        try {
+            return $this->container->get(Logger::class);
+        } catch (DependencyException | NotFoundException $e) {
+            echo "Fail to get logger class" . PHP_EOL;
+        }
     }
 }

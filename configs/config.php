@@ -1,5 +1,6 @@
 <?php
 
 const CONFIG = [
-    "threads" => 1
+    "logsDir" => __DIR__ . "/../logs",
+    "threads" => 3
 ];
