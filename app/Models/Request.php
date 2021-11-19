@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Dotenv\Exception\ValidationException;
+
 class Request
 {
     private array $data;
@@ -17,7 +19,7 @@ class Request
         foreach ($fields as $field) {
 
             if (!isset($this->data[$field])) {
-                return null;
+                throw new ValidationException("Filed {$field} not found in request (" . json_encode($this->data) . ")");
             }
 
             $result[$field] = $this->data[$field];

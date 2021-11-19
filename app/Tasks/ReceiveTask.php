@@ -5,6 +5,7 @@ namespace App\Tasks;
 use App\Models\Request;
 use App\Tasks\traits\AsyncTask;
 use App\Tasks\traits\RabbitTask;
+use Dotenv\Exception\ValidationException;
 use ErrorException;
 use PhpAmqpLib\Message\AMQPMessage;
 
@@ -53,14 +54,18 @@ class ReceiveTask extends Task
         $request = $rawRequest->validate(['category', 'task', 'data']);
 
         if (isset($request) && count($request) != 0) {
-            $action = $this->app->callAction(
-                $request['category'],
-                $request['task'],
-                new Request($request['data'])
-            );
+            try {
+                $action = $this->app->callAction(
+                    $request['category'],
+                    $request['task'],
+                    new Request($request['data'])
+                );
 
-            if (!$action) {
-                $logger->logE($this->TAG, "Bad request. Unknown action: " . json_encode($request));
+                if (!$action) {
+                    $logger->logE($this->TAG, "Bad request. Unknown action: " . json_encode($request));
+                }
+            } catch (ValidationException $exception) {
+                $logger->logE($this->TAG, $exception->getMessage());
             }
         } else {
             $logger->logE($this->TAG, "Fail to parse request body: {$msg->body}");

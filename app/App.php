@@ -2,22 +2,19 @@
 
 namespace App;
 
-use App\Console\Command;
 use App\Console\Exceptions\CommandParserException;
 use App\Console\CommandParser;
-use App\Models\RabbitInfo;
 use App\Models\Request;
 use App\Tasks\Task;
-use App\Tasks\traits\RabbitTask;
 use App\Utils\Logger\Logger;
 use DI\Container;
 use DI\ContainerBuilder;
 use DI\DependencyException;
 use DI\NotFoundException;
 use Dotenv\Dotenv;
+use Dotenv\Exception\ValidationException;
 use Exception;
 use InvalidArgumentException;
-use phpseclib3\Math\BigInteger\Engines\PHP;
 
 class App
 {
@@ -94,6 +91,15 @@ class App
         return $this->container->get($type);
     }
 
+    /**
+     * @param string $controller
+     * @param string $action
+     * @param Request $request
+     * @return bool
+     * @throws DependencyException
+     * @throws NotFoundException
+     * @throws ValidationException
+     */
     public function callAction(string $controller, string $action, Request $request): bool
     {
         $middleware = "middleware.{$controller}.{$action}";
@@ -123,12 +129,12 @@ class App
         return true;
     }
 
+    /**
+     * @throws DependencyException
+     * @throws NotFoundException
+     */
     public function getLogger():Logger
     {
-        try {
-            return $this->container->get(Logger::class);
-        } catch (DependencyException | NotFoundException $e) {
-            echo "Fail to get logger class" . PHP_EOL;
-        }
+        return $this->container->get(Logger::class);
     }
 }
