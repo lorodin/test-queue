@@ -1,5 +1,5 @@
 [
-  {"category": "account123", "task": "processPayment", "data": {"account_id": 123, "amount": 59000}},
+  {"category": "account", "task": "processPayment", "data": {"account_id": 123, "amount": 59000}},
   {"category": "account", "task": "processPayment", "data": {"account_id": 345, "amount": 99000}},
   {"category": "amocrm", "task": "sendLead", "data": {"lead_id": 1}},
   {"category": "account", "task": "processPayment", "data": {"account_id": 678, "amount": 139000}},

@@ -26,11 +26,17 @@ class ReceiveTask extends Task
             ->getLogger()
             ->logI($this->TAG, "Task started");
 
+        $this->channel->basic_qos(
+            null,
+            1,
+            null
+        );
+
         $this->channel->basic_consume(
             $params['queue'],
             '',
             false,
-            true,
+            false,
             false,
             false,
             function (AMQPMessage $msg) { $this->process($msg); } );
@@ -59,5 +65,7 @@ class ReceiveTask extends Task
         } else {
             $logger->logE($this->TAG, "Fail to parse request body: {$msg->body}");
         }
+
+        $msg->ack();
     }
 }
