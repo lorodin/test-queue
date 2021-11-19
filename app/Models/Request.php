@@ -19,7 +19,7 @@ class Request
         foreach ($fields as $field) {
 
             if (!isset($this->data[$field])) {
-                throw new ValidationException("Filed {$field} not found in request (" . json_encode($this->data) . ")");
+                throw new ValidationException("Field {$field} not found in request (" . json_encode($this->data) . ")");
             }
 
             $result[$field] = $this->data[$field];
