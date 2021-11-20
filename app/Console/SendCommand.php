@@ -2,30 +2,49 @@
 
 namespace App\Console;
 
-use App\Console\Exceptions\CommandParserException;
 use App\Readers\DebugReader;
 use App\Readers\JsonReader;
-use App\Tasks\SendTask;
+use App\Requests\SendRequest;
+use App\Services\RabbitMqApiService;
+use Exception;
+use InvalidArgumentException;
 
-class SendCommand extends Command
+class SendCommand
 {
+    private RabbitMqApiService $rabbitMqService;
+
+    public function __construct(RabbitMqApiService $rabbitMqService)
+    {
+        $this->rabbitMqService = $rabbitMqService;
+    }
+
     /**
-     * @throws CommandParserException
+     * @throws Exception
      */
     public function do(...$args) : int
     {
-        $task = $this->app->getTask(SendTask::class);
-
-        $type = CommandParser::getArg('-type', $args, true, ["json", "message"]);
-
-        if (count($args) < 5) {
-            throw new CommandParserException(($type == "json" ? "Path to json file" : "Message text") . " not set");
+        if (count($args) == 0) {
+            throw new InvalidArgumentException("Not set sending resource");
         }
 
-        $task->run([
-            'queue' => env('RABBIT_QUEUE', 'default_queue'),
-            'reader' => $type == 'json' ? new JsonReader($args[4]) : new DebugReader($args[4])
-        ]);
+        $type = $args[0];
+
+        if ($type != "message" && $type != "json") {
+            throw new InvalidArgumentException("Unknown type: $type");
+        }
+
+        $reader = $type == "message" ? new DebugReader($args[1]) : new JsonReader($args[1]);
+
+        $this->rabbitMqService->connect(env("RABBIT_QUEUE", "example_queue"));
+
+        foreach ($reader->read() as $message) {
+            $request = new SendRequest($message);
+            $request->validate();
+            $this->rabbitMqService->send($request);
+            echo "Send message " . json_encode($message) . " successfully" . PHP_EOL;
+        }
+
+        $this->rabbitMqService->close();
 
         return 0;
     }

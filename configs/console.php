@@ -7,7 +7,7 @@ use App\Console\ReceiveCommand;
 use App\Console\SendCommand;
 
 return [
-    "console.send" => [SendCommand::class, 'do'],
-    "console.receive" => [ReceiveCommand::class, 'do'],
-    "console.help" => [HelpCommand::class, 'do'],
+    "send"    => SendCommand::class,
+    "receive" => ReceiveCommand::class,
+    "help"    => HelpCommand::class
 ];

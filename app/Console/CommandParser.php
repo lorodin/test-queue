@@ -4,7 +4,7 @@ namespace App\Console;
 
 use App\Console\Exceptions\CommandParserException;
 
-class CommandParser
+final class CommandParser
 {
     const HELP_COMMAND    = "help";
     const SEND_COMMAND    = "send";

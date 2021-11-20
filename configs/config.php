@@ -1,6 +1,6 @@
 <?php
 
 return [
-    "logsDir" => __DIR__ . "/../logs",
-    "processes" => 3
+    "logsDir"   => __DIR__ . "/../logs",
+    "processes" => 5
 ];

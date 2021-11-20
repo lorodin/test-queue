@@ -5,7 +5,22 @@ use App\Controllers\Flagmer\Billing\Account;
 use App\Controllers\Flagmer\Integrations\AmoCrm;
 
 return [
-    "controller.debug.log" => [DebugController::class, "logAction"],
-    "controller.amocrm.sendLead" => [AmoCrm::class, "sendLeadAction"],
-    "controller.account.processPayment" => [Account::class, "processPaymentAction"]
+    "debug.log" => [
+        "action" => [DebugController::class, "log"],
+        "middlewares" => [
+            "debug.log"
+        ]
+    ],
+    "amocrm.sendLead" => [
+        "action"     => [AmoCrm::class, "sendLead"],
+        "middlewares" => [
+            "amocrm.sendLead"
+        ]
+    ],
+    "account.processPayment" => [
+        "action"     => [Account::class, "processPayment"],
+        "middlewares" => [
+            "account.processPayment"
+        ]
+    ]
 ];

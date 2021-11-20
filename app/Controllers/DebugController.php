@@ -2,13 +2,11 @@
 
 namespace App\Controllers;
 
-use App\Models\Request;
+use App\Requests\DebugRequest;
 
 class DebugController
 {
-    public function logAction(Request $request) {
-        $validate = $request->validate(['message']);
-
-        echo "DebugAction::logAction " . $validate['message'] . PHP_EOL;
+    public function logAction(DebugRequest $request) {
+        echo "DebugAction::logAction " . $request->message . PHP_EOL;
     }
 }

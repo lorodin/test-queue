@@ -3,18 +3,19 @@
 namespace App\Middlewares;
 
 use App\Controllers\Flagmer\Billing\Account\processPaymentDto;
-use App\Models\Request;
+use App\Requests\AccountPaymentRequest;
 
-class AccountMiddleware
+class AccountMiddleware implements Middleware
 {
-    public function next(Request $request, callable $next) {
-        $request = $request->validate(['account_id', 'amount']);
+    public function next($data, callable $next) {
+        $request = new AccountPaymentRequest($data);
+        $request->validate();
 
         $processPaymentInfo = new processPaymentDto();
 
-        $processPaymentInfo->account_id = $request['account_id'];
-        $processPaymentInfo->amount = $request['amount'];
+        $processPaymentInfo->account_id = $request->account_id;
+        $processPaymentInfo->amount = $request->amount;
 
-        call_user_func($next, $processPaymentInfo);
+        $next($processPaymentInfo);
     }
 }

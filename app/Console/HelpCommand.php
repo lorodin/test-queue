@@ -2,9 +2,9 @@
 
 namespace App\Console;
 
-class HelpCommand extends Command
+class HelpCommand
 {
-    function do(...$args): int
+    function do(): int
     {
         echo "Application help" . PHP_EOL;
         echo "use: " . PHP_EOL ."php app.php <cmd> [options]" . PHP_EOL . PHP_EOL;

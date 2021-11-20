@@ -2,20 +2,35 @@
 
 namespace App\Console;
 
-use App\App;
+use App\Services\CommandsManagerService;
+use App\Utils\Process;
+use App\Console\CommandParser;
+use Exception;
 
-abstract class Command
+class Command
 {
     /**
      * @Inject
-     * @var App
+     * @var CommandsManagerService
      */
-    protected App $app;
+    protected CommandsManagerService $commandsService;
 
-    public function __construct(App $app)
+    public function __construct(CommandsManagerService $commandsService)
     {
-        $this->app = $app;
+        $this->commandsService = $commandsService;
     }
 
-    public abstract function do(...$args): int;
+    /**
+     * @throws Exceptions\CommandParserException
+     * @throws Exception
+     */
+    public function do(array $args): int
+    {
+        $result = Process::RESULT_OK;
+        $cmd = CommandParser::getCommand($args);
+
+        $this->commandsService->call($cmd, $args);
+
+        return $result;
+    }
 }

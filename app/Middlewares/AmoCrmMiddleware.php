@@ -3,16 +3,18 @@
 namespace App\Middlewares;
 
 use App\Controllers\Flagmer\Integrations\Amocrm\sendLeadDto;
-use App\Models\Request;
+use App\Requests\AmoCrmSetLeadRequest;
 
-class AmoCrmMiddleware
+class AmoCrmMiddleware implements Middleware
 {
-    public function next(Request $request, callable $next) {
-        $request = $request->validate(['lead_id']);
+    public function next($request, callable $next) {
+        $request = new AmoCrmSetLeadRequest($request);
+
+        $request->validate();
 
         $sendLedDto = new sendLeadDto();
 
-        $sendLedDto->lead_id = $request['lead_id'];
+        $sendLedDto->lead_id = $request->lead_id;
 
         call_user_func($next, $sendLedDto);
     }
