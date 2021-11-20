@@ -5,8 +5,10 @@ namespace App\Tasks;
 use App\Models\Request;
 use App\Tasks\traits\AsyncTask;
 use App\Tasks\traits\RabbitTask;
+use App\Utils\Logger\Logger;
 use Dotenv\Exception\ValidationException;
 use ErrorException;
+use Exception;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class ReceiveTask extends Task
@@ -23,9 +25,7 @@ class ReceiveTask extends Task
     {
         $this->TAG = "ReceiveTask" . $this->getName();
 
-        $this->app
-            ->getLogger()
-            ->logI($this->TAG, "Task started");
+        Logger::info($this->TAG, "Task started");
 
         $this->channel->basic_qos(
             null,
@@ -40,37 +40,38 @@ class ReceiveTask extends Task
             false,
             false,
             false,
-            function (AMQPMessage $msg) { $this->process($msg); } );
+            function (AMQPMessage $msg) {
+                try {
+                    $rawRequest = new Request(json_decode($msg->body, true));
+                    $request = $rawRequest->validate(['category', 'task', 'data']);
+
+                    $this->send($request['category'], $request['task'], $request['data']);
+                } catch (ValidationException $exception) {
+                    Logger::error($this->TAG, $exception->getMessage());
+                }
+
+                $msg->ack();
+            }
+        );
 
         while (count($this->channel->callbacks)) {
             $this->channel->wait();
         }
     }
 
-    private function process(AMQPMessage $msg) {
-        $logger = $this->app->getLogger();
+    private function send(string $controller, string $action, array $body) {
+        try {
+            $action = $this->app->callAction(
+                $controller,
+                $action,
+                new Request($body)
+            );
 
-        $rawRequest = new Request(json_decode($msg->body, true));
-        $request = $rawRequest->validate(['category', 'task', 'data']);
-
-        if (isset($request) && count($request) != 0) {
-            try {
-                $action = $this->app->callAction(
-                    $request['category'],
-                    $request['task'],
-                    new Request($request['data'])
-                );
-
-                if (!$action) {
-                    $logger->logE($this->TAG, "Bad request. Unknown action: " . json_encode($request));
-                }
-            } catch (ValidationException $exception) {
-                $logger->logE($this->TAG, $exception->getMessage());
+            if (!$action) {
+                Logger::error($this->TAG, "Bad request. Unknown action: " . json_encode($body));
             }
-        } else {
-            $logger->logE($this->TAG, "Fail to parse request body: {$msg->body}");
+        } catch (Exception $exception) {
+            Logger::error($this->TAG, $exception->getMessage());
         }
-
-        $msg->ack();
     }
 }

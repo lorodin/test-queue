@@ -6,6 +6,7 @@ use App\Console\Exceptions\CommandParserException;
 use App\Console\CommandParser;
 use App\Models\Request;
 use App\Tasks\Task;
+use App\Utils\Logger\ILogger;
 use App\Utils\Logger\Logger;
 use DI\Container;
 use DI\ContainerBuilder;
@@ -18,8 +19,9 @@ use InvalidArgumentException;
 
 class App
 {
+    const TAG = App::class;
+
     protected Container $container;
-    protected Logger $logger;
 
     /**
      * @throws Exception
@@ -31,10 +33,13 @@ class App
 
         $builder = new ContainerBuilder();
 
-        $builder->addDefinitions(APP_ROOT . "/di/core.php");
-        $builder->addDefinitions(APP_ROOT . "/di/console.php");
-        $builder->addDefinitions(APP_ROOT . "/di/controllers.php");
-        $builder->addDefinitions(APP_ROOT . "/di/middlewares.php");
+        $builder->addDefinitions(APP_ROOT . "/configs/core.php");
+
+        $builder->addDefinitions(APP_ROOT . "/configs/console.php");
+
+        $builder->addDefinitions(APP_ROOT . "/configs/controllers.php");
+
+        $builder->addDefinitions(APP_ROOT . "/configs/middlewares.php");
 
         $builder->addDefinitions([
             App::class => function (Container $c) {
@@ -50,12 +55,12 @@ class App
             exit(1);
         }
 
-        if (!$this->container->has(Logger::class)) {
-            echo "Logger not created" . PHP_EOL;
+        if (!$this->container->has(ILogger::class)) {
+            echo "ILogger not created" . PHP_EOL;
             exit(1);
         }
 
-        $this->logger = $this->container->get(Logger::class);
+        Logger::init($this->container->get(ILogger::class));
     }
 
     public function run(array $args)
@@ -80,12 +85,16 @@ class App
                 $args
             );
         } catch (InvalidArgumentException | Exception $exception) {
-            $this->logger->logE("APP", $exception->getMessage());
+            Logger::error(App::class, $exception->getMessage());
         }
 
         exit($result);
     }
 
+    /**
+     * @throws DependencyException
+     * @throws NotFoundException
+     */
     public function getTask($type): ?Task
     {
         return $this->container->get($type);
@@ -127,14 +136,5 @@ class App
         }
 
         return true;
-    }
-
-    /**
-     * @throws DependencyException
-     * @throws NotFoundException
-     */
-    public function getLogger():Logger
-    {
-        return $this->container->get(Logger::class);
     }
 }

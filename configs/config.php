@@ -1,6 +1,6 @@
 <?php
 
-const CONFIG = [
+return [
     "logsDir" => __DIR__ . "/../logs",
-    "threads" => 3
+    "processes" => 3
 ];

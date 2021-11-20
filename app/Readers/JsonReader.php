@@ -13,7 +13,7 @@ class JsonReader extends Reader
     public function read(): Generator
     {
         if (!file_exists($this->data)) {
-            throw new Exception("File " . $this->data . " not found");
+            throw new Exception("File `" . $this->data . "` not found");
         }
 
         $json = file_get_contents($this->data);

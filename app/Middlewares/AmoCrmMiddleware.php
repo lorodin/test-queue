@@ -11,6 +11,7 @@ class AmoCrmMiddleware
         $request = $request->validate(['lead_id']);
 
         $sendLedDto = new sendLeadDto();
+
         $sendLedDto->lead_id = $request['lead_id'];
 
         call_user_func($next, $sendLedDto);

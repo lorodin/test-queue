@@ -2,7 +2,7 @@
 
 namespace App\Utils\Logger;
 
-class FileLogger implements Logger
+class FileILogger implements ILogger
 {
     private string $logsDir;
 

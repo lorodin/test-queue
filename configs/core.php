@@ -3,8 +3,8 @@
 use App\Console\Command;
 use App\Models\RabbitInfo;
 use App\Tasks\traits\RabbitTask;
-use App\Utils\Logger\FileLogger;
-use App\Utils\Logger\Logger;
+use App\Utils\Logger\FileILogger;
+use App\Utils\Logger\ILogger;
 use DI\Container;
 
 return [
@@ -16,7 +16,7 @@ return [
             env('RABBIT_PASS', 'guest')
         );
     },
-    Logger::class => \DI\create(FileLogger::class)->constructor(config("logsDir", APP_ROOT . "/logs")),
+    ILogger::class => \DI\create(FileILogger::class)->constructor(config("logsDir", APP_ROOT . "/logs")),
     Command::class => \DI\create(Command::class)->constructor(
         [
             "app" => \DI\get("App")

@@ -2,6 +2,7 @@
 
 namespace App\Tasks\traits;
 
+use App\Utils\Logger\Logger;
 use App\Utils\Process;
 use Exception;
 
@@ -19,7 +20,7 @@ trait AsyncTask
 
         $this->thread->run(
             function () use($params) {
-                $result = 0;
+                $result = Process::RESULT_OK;
 
                 try {
                     $this->beforeDo($params);
@@ -28,11 +29,8 @@ trait AsyncTask
 
                     $this->afterDo($params);
                 } catch (Exception $exception) {
-                    $this->app
-                        ->getLogger()
-                        ->logE("AsyncTask{$this->name}", $exception->getMessage());
-
-                    $result = 1;
+                    Logger::error("AsyncTask{$this->name}", $exception->getMessage());
+                    $result = Process::RESULT_ERROR;
                 }
 
                 return $result;
